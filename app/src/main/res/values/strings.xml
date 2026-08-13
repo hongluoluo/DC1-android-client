@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">DC1插线板</string>
+    <string name="my_devices">我的设备</string>
+    <string name="add_device">＋ 添加设备</string>
+    <string name="empty_devices">还没有设备\n点击下方按钮添加</string>
+    <string name="online">在线</string>
+    <string name="offline">离线</string>
+    <string name="checking">检测中…</string>
+
+    <string name="status_connecting">正在连接…</string>
+    <string name="status_online">已连接 %1$s</string>
+    <string name="status_offline">离线 · 请检查IP或网络</string>
+
+    <string name="settings">设置</string>
+    <string name="energy_title">电量统计</string>
+    <string name="all_on">全部开启</string>
+    <string name="all_off">全部关闭</string>
+
+    <string name="e_voltage">电压</string>
+    <string name="e_current">电流</string>
+    <string name="e_power">功率</string>
+    <string name="e_factor">功率因数</string>
+    <string name="e_today">今日用电</string>
+    <string name="e_yesterday">昨日用电</string>
+    <string name="e_total">总用电</string>
+
+    <string name="d_title">设置</string>
+    <string name="d_dev_name">设备名称（别名）</string>
+    <string name="d_ip">设备IP地址</string>
+    <string name="d_interval">全局刷新间隔（秒，1-10）</string>
+    <string name="d_name1">开关1名称</string>
+    <string name="d_name2">开关2名称</string>
+    <string name="d_name3">开关3名称</string>
+    <string name="d_name4">开关4名称</string>
+    <string name="d_save">保存</string>
+    <string name="d_cancel">取消</string>
+    <string name="d_ok">确定</string>
+
+    <string name="add_title">添加设备</string>
+    <string name="edit_title">编辑设备</string>
+    <string name="action_edit">编辑</string>
+    <string name="action_delete">删除</string>
+    <string name="confirm_delete">确定删除「%1$s」？</string>
+    <string name="toast_saved">设置已保存</string>
+    <string name="toast_fail">命令发送失败，请检查连接</string>
+    <string name="toast_deleted">已删除</string>
+
+    <string name="state_on">已开启</string>
+    <string name="state_off">已关闭</string>
+    <string name="state_unknown">未知状态</string>
+</resources>
