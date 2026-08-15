@@ -49,4 +49,21 @@
     <string name="state_on">已开启</string>
     <string name="state_off">已关闭</string>
     <string name="state_unknown">未知状态</string>
+
+    <string name="timer_duration">时长</string>
+    <string name="timer_hours">小时</string>
+    <string name="timer_minutes">分钟</string>
+    <string name="timer_target">倒计时结束后</string>
+    <string name="timer_turn_on">开启开关</string>
+    <string name="timer_turn_off">关闭开关</string>
+    <string name="timer_hint">到点自动执行，不影响当前开关状态（可随时取消）</string>
+    <string name="timer_btn">倒计时</string>
+    <string name="switch_label">开关</string>
+    <string name="timer_none">无倒计时</string>
+    <string name="timer_active_on">⏱ %1$s 后开启</string>
+    <string name="timer_active_off">⏱ %1$s 后关闭</string>
+    <string name="timer_start">开始</string>
+    <string name="timer_cancel_btn">取消倒计时</string>
+    <string name="timer_unsupported">固件不支持倒计时</string>
+    <string name="timer_invalid">请输入有效时长（最长23:59）</string>
 </resources>

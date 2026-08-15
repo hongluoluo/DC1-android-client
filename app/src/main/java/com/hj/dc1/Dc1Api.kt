@@ -36,4 +36,14 @@ object Dc1Api {
     /** 查询全部状态，返回 data 或 null */
     fun getStatus(ip: String): JSONObject? =
         post(ip, "/get_status", "i=0")?.optJSONObject("data")
+
+    /**
+     * 设置/取消倒计时（固件倒计时功能，需 v2020.07.11.2000+ 倒计时版固件）
+     * @param seconds >0 设置倒计时(秒)，=0 取消
+     * @param targetOn 倒计时结束后执行的动作：true=开启，false=关闭
+     */
+    fun setTimer(ip: String, channel: Int, seconds: Long, targetOn: Boolean): Boolean {
+        val body = "timer_ch=$channel&timer_seconds=$seconds&timer_target=${if (targetOn) "on" else "off"}"
+        return post(ip, "/dc1_setting", body)?.optInt("code") == 1
+    }
 }
