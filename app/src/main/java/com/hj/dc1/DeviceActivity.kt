@@ -20,7 +20,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import org.json.JSONObject
 
-/** 单设备控制页：4开关 + 倒计时 + 全开全关 + 电量统计 + 设备设置 */
+/** 单设备控制页：4开关 + 倒计时 + 定时任务 + 全开全关 + 电量统计 + 设备设置 */
 class DeviceActivity : AppCompatActivity() {
 
     companion object {
@@ -40,6 +40,11 @@ class DeviceActivity : AppCompatActivity() {
     /** 固件是否支持倒计时（状态里无 timer1 字段则为老固件） */
     private var timerSupported = false
 
+    /** 每通道定时任务状态字符串（固件返回 "HH:MM-HH:MM" / "--" 等） */
+    private val schedStatus = Array(4) { "--" }
+    /** 固件是否支持定时任务（状态里无 sched1 字段则为老固件） */
+    private var schedSupported = false
+
     private lateinit var statusDot: View
     private lateinit var statusText: TextView
 
@@ -50,7 +55,9 @@ class DeviceActivity : AppCompatActivity() {
         val sw: DcSwitch,
         val card: MaterialCardView,
         val timerTv: TextView,
-        val timerBtn: TextView
+        val timerBtn: TextView,
+        val schedTv: TextView,
+        val schedBtn: TextView
     )
 
     private val poller = object : Runnable {
@@ -242,8 +249,39 @@ class DeviceActivity : AppCompatActivity() {
                 )
             }
 
+            // 定时按钮（紫色圆角，与倒计时按钮同风格）
+            val schedBtn = TextView(this).apply {
+                text = getString(R.string.sched_btn)
+                textSize = 12f
+                isClickable = true
+                isFocusable = true
+                setTextColor(Color.WHITE)
+                setBackgroundResource(R.drawable.bg_timer_btn)
+                setPadding(dp(14), dp(6), dp(14), dp(6))
+                gravity = Gravity.CENTER
+                setOnClickListener { showScheduleDialog(i) }
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+            }
+
+            // 定时状态（无定时 / 时间区间），在定时按钮下方
+            val schedTv = TextView(this).apply {
+                text = getString(R.string.sched_none)
+                textSize = 10f
+                maxLines = 1
+                setTextColor(ContextCompat.getColor(this@DeviceActivity, R.color.text_secondary))
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                )
+            }
+
             rightInner.addView(timerBtn)
             rightInner.addView(timerTv)
+            rightInner.addView(schedBtn)
+            rightInner.addView(schedTv)
             rightCol.addView(rightInner)
 
             texts.addView(nameTv)
@@ -256,7 +294,7 @@ class DeviceActivity : AppCompatActivity() {
             card.addView(col)
             container.addView(card)
 
-            cards.add(SwitchCard(i, nameTv, subTv, sw, card, timerTv, timerBtn))
+            cards.add(SwitchCard(i, nameTv, subTv, sw, card, timerTv, timerBtn, schedTv, schedBtn))
         }
     }
 
@@ -285,6 +323,7 @@ class DeviceActivity : AppCompatActivity() {
                     applySwitchStates(data)
                     applyEnergy(data)
                     applyTimer(data)
+                    applySchedule(data)
                     setOnline(true)
                 }
             }
@@ -418,6 +457,164 @@ class DeviceActivity : AppCompatActivity() {
         }.start()
     }
 
+    // ---------- 定时任务 ----------
+
+    /** 从状态JSON解析定时任务字段（老固件无 sched1 字段 → 不支持） */
+    private fun applySchedule(data: JSONObject) {
+        if (data.has("sched1")) {
+            schedSupported = true
+            for (i in 0 until 4) {
+                schedStatus[i] = data.optString("sched${i + 1}", "--")
+            }
+        } else if (schedSupported) {
+            for (i in 0 until 4) schedStatus[i] = "--"
+        }
+        updateScheduleViews()
+    }
+
+    private fun updateScheduleViews() {
+        cards.forEach { c ->
+            val i = c.index
+            val showSched = schedSupported
+            c.schedTv.visibility = if (showSched) View.VISIBLE else View.GONE
+            c.schedBtn.visibility = if (showSched) View.VISIBLE else View.GONE
+            if (!showSched) return@forEach
+
+            val st = schedStatus[i]
+            if (st == "--" || st.isEmpty()) {
+                c.schedTv.text = getString(R.string.sched_none)
+                c.schedTv.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
+            } else {
+                c.schedTv.text = "⏰ $st"
+                c.schedTv.setTextColor(ContextCompat.getColor(this, R.color.sched_color))
+            }
+        }
+    }
+
+    private fun showScheduleDialog(i: Int) {
+        if (!schedSupported) {
+            Toast.makeText(this, R.string.sched_unsupported, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val d = device() ?: return
+        val view = layoutInflater.inflate(R.layout.dialog_schedule, null)
+        val etOnHh = view.findViewById<EditText>(R.id.etOnHh)
+        val etOnMm = view.findViewById<EditText>(R.id.etOnMm)
+        val etOffHh = view.findViewById<EditText>(R.id.etOffHh)
+        val etOffMm = view.findViewById<EditText>(R.id.etOffMm)
+        val dayContainer = view.findViewById<LinearLayout>(R.id.dayContainer)
+        val channel = i + 1
+
+        // 从当前状态解析开/关时间（"HH:MM-HH:MM" 等格式）
+        val st = schedStatus[i]
+        var onHh = -1; var onMm = -1; var offHh = -1; var offMm = -1
+        if (st.length >= 5 && st[2] == ':') {
+            val parts = st.split("-")
+            if (parts.size >= 1 && parts[0].length == 5 && parts[0][2] == ':') {
+                onHh = parts[0].substring(0, 2).toIntOrNull() ?: -1
+                onMm = parts[0].substring(3, 5).toIntOrNull() ?: -1
+            }
+            if (parts.size >= 2 && parts[1].length == 5 && parts[1][2] == ':') {
+                offHh = parts[1].substring(0, 2).toIntOrNull() ?: -1
+                offMm = parts[1].substring(3, 5).toIntOrNull() ?: -1
+            }
+        }
+        if (onHh >= 0) { etOnHh.setText(onHh.toString()); etOnMm.setText(onMm.toString()) }
+        if (offHh >= 0) { etOffHh.setText(offHh.toString()); etOffMm.setText(offMm.toString()) }
+
+        // 星期选择（bit0=周一..bit6=周日）
+        val weekLabels = arrayOf("一", "二", "三", "四", "五", "六", "日")
+        var days = store.schedDays(deviceId, channel)
+        val dayViews = mutableListOf<TextView>()
+        for (k in 0 until 7) {
+            val tv = TextView(this).apply {
+                text = weekLabels[k]
+                textSize = 13f
+                gravity = Gravity.CENTER
+                isClickable = true
+                isFocusable = true
+                layoutParams = LinearLayout.LayoutParams(0, dp(36), 1f).apply {
+                    marginEnd = dp(4)
+                }
+                setOnClickListener {
+                    val bit = 1 shl k
+                    days = days xor bit
+                    refreshDayButtons(dayViews, days)
+                }
+            }
+            dayViews.add(tv)
+            dayContainer.addView(tv)
+        }
+        refreshDayButtons(dayViews, days)
+
+        AlertDialog.Builder(this)
+            .setTitle(getString(R.string.sched_title) + " · ${d.switchNames.getOrElse(i) { "开关$channel" }}")
+            .setView(view)
+            .setNegativeButton(R.string.d_cancel, null)
+            .setNeutralButton(R.string.sched_clear) { _, _ -> sendClearSchedule(channel) }
+            .setPositiveButton(R.string.d_save) { _, _ ->
+                val onH = etOnHh.text.toString().toIntOrNull()
+                val onM = etOnMm.text.toString().toIntOrNull()
+                val offH = etOffHh.text.toString().toIntOrNull()
+                val offM = etOffMm.text.toString().toIntOrNull()
+                var onMin = -1
+                var offMin = -1
+                if (onH != null && onM != null && onH in 0..23 && onM in 0..59) onMin = onH * 60 + onM
+                if (offH != null && offM != null && offH in 0..23 && offM in 0..59) offMin = offH * 60 + offM
+                if (onMin < 0 && offMin < 0) {
+                    Toast.makeText(this, R.string.sched_invalid, Toast.LENGTH_SHORT).show()
+                    return@setPositiveButton
+                }
+                sendSchedule(channel, onMin, offMin, days)
+            }
+            .show()
+    }
+
+    private fun refreshDayButtons(dayViews: List<TextView>, days: Int) {
+        dayViews.forEachIndexed { k, tv ->
+            val on = (days shr k) and 1 == 1
+            if (on) {
+                tv.setBackgroundResource(R.drawable.bg_timer_btn)
+                tv.setTextColor(Color.WHITE)
+            } else {
+                tv.setBackgroundResource(R.drawable.bg_day_off)
+                tv.setTextColor(0xFF616161.toInt())
+            }
+        }
+    }
+
+    private fun sendSchedule(channel: Int, onMin: Int, offMin: Int, days: Int) {
+        val d = device() ?: return
+        val ip = d.ip
+        store.setSchedDays(deviceId, channel, days)
+        Thread {
+            val ok = Dc1Api.setSchedule(ip, channel, onMin, offMin, days)
+            runOnUiThread {
+                if (ok) {
+                    pollStatus()
+                } else {
+                    Toast.makeText(this, R.string.toast_fail, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+
+    private fun sendClearSchedule(channel: Int) {
+        val d = device() ?: return
+        val ip = d.ip
+        store.setSchedDays(deviceId, channel, 0)
+        Thread {
+            val ok = Dc1Api.clearSchedule(ip, channel)
+            runOnUiThread {
+                if (ok) {
+                    pollStatus()
+                } else {
+                    Toast.makeText(this, R.string.toast_fail, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }.start()
+    }
+
     // ---------- 状态轮询 ----------
 
     private fun pollStatus() {
@@ -435,6 +632,7 @@ class DeviceActivity : AppCompatActivity() {
                     applySwitchStates(data)
                     applyEnergy(data)
                     applyTimer(data)
+                    applySchedule(data)
                     setOnline(true)
                 }
             }

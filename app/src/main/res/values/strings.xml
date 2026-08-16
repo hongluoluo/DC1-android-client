@@ -66,4 +66,18 @@
     <string name="timer_cancel_btn">取消倒计时</string>
     <string name="timer_unsupported">固件不支持倒计时</string>
     <string name="timer_invalid">请输入有效时长（最长23:59）</string>
+
+    <string name="sched_btn">定时</string>
+    <string name="sched_none">无定时</string>
+    <string name="sched_title">定时任务</string>
+    <string name="sched_on_time">开时间（留空=不设置）</string>
+    <string name="sched_off_time">关时间（留空=不设置）</string>
+    <string name="sched_weekdays">重复星期</string>
+    <string name="sched_hour">时</string>
+    <string name="sched_min">分</string>
+    <string name="sched_hint">到点自动执行开关，不影响当前状态（可随时清除）</string>
+    <string name="sched_invalid">请至少设置开时间或关时间之一</string>
+    <string name="sched_clear">清除定时</string>
+    <string name="sched_unsupported">固件不支持定时任务</string>
+    <string name="sched_everyday">每天</string>
 </resources>

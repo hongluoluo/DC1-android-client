@@ -6,4 +6,5 @@
     <color name="text_secondary">#CAC4D0</color>
     <color name="on_color">#81C784</color>
     <color name="bad_color">#EF5350</color>
+    <color name="sched_color">#B39DDB</color>
 </resources>

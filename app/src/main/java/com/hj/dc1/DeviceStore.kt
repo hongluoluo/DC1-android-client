@@ -83,6 +83,16 @@ class DeviceStore(context: Context) {
         get() = sp.getLong("interval", 2500)
         set(value) = sp.edit().putLong("interval", value).apply()
 
+    /**
+     * 定时任务的星期位掩码（本地存储，因固件 /get_status 不返回星期）
+     * bit0=周一 .. bit6=周日
+     */
+    fun schedDays(deviceId: String, channel: Int): Int =
+        sp.getInt("scheddays_${deviceId}_$channel", 0)
+
+    fun setSchedDays(deviceId: String, channel: Int, days: Int) =
+        sp.edit().putInt("scheddays_${deviceId}_$channel", days).apply()
+
     /** v1.0 单设备数据迁移 */
     fun migrateOldPrefs() {
         if (!sp.contains("devices")) {
