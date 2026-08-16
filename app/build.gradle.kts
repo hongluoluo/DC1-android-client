@@ -11,8 +11,8 @@ android {
         applicationId = "com.hj.dc1"
         minSdk = 24
         targetSdk = 34
-        versionCode = 4
-        versionName = "2.1"
+        versionCode = 5
+        versionName = "2.1.1"
     }
 
     buildTypes {
