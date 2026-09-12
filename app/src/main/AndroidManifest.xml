@@ -25,5 +25,10 @@
             android:name=".DeviceActivity"
             android:exported="false"
             android:parentActivityName=".MainActivity" />
+
+        <activity
+            android:name=".LogActivity"
+            android:exported="false"
+            android:parentActivityName=".DeviceActivity" />
     </application>
 </manifest>

@@ -68,4 +68,32 @@ object Dc1Api {
     /** 清除某通道的定时任务 */
     fun clearSchedule(ip: String, channel: Int): Boolean =
         post(ip, "/dc1_setting", "sched_ch=$channel&sched_clear=1")?.optInt("code") == 1
+
+    /** 查询开关操作记录 */
+    fun getLog(ip: String, n: Int = 30, ch: Int = 0, act: String = ""): Pair<Int, List<LogEntry>>? {
+        val sb = StringBuilder("n=$n")
+        if (ch > 0) sb.append("&ch=$ch")
+        if (act.isNotEmpty()) sb.append("&act=$act")
+        val resp = post(ip, "/log", sb.toString()) ?: return null
+        val data = resp.optJSONObject("data") ?: return null
+        val total = data.optInt("total")
+        val rowsArr = data.optJSONArray("rows")
+        val rows = mutableListOf<LogEntry>()
+        if (rowsArr != null) {
+            for (i in 0 until rowsArr.length()) {
+                val r = rowsArr.optJSONArray(i) ?: continue
+                val chNum = r.optString(1).toIntOrNull() ?: 0
+                rows.add(LogEntry(r.optString(0), chNum, r.optString(2) == "on", r.optString(3)))
+            }
+        }
+        return total to rows
+    }
 }
+
+/** 单条开关操作记录 */
+data class LogEntry(
+    val time: String,
+    val channel: Int,
+    val on: Boolean,
+    val source: String
+)

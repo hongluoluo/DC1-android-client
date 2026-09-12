@@ -80,4 +80,17 @@
     <string name="sched_clear">清除定时</string>
     <string name="sched_unsupported">固件不支持定时任务</string>
     <string name="sched_everyday">每天</string>
+
+    <string name="log_title">操作记录 · %1$s</string>
+    <string name="log_refresh">查询</string>
+    <string name="log_all_ch">全部通道</string>
+    <string name="log_all_act">全部动作</string>
+    <string name="log_on">开启</string>
+    <string name="log_off">关闭</string>
+    <string name="log_loading">加载中…</string>
+    <string name="log_fail">加载失败，请检查连接</string>
+    <string name="log_empty">暂无记录</string>
+    <string name="log_total">共 %1$d 条记录</string>
+    <string name="log_total_limited">共 %1$d 条记录（显示最近 %2$d 条）</string>
+    <string name="log_desc">操作记录</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.hj.dc1
 
 import android.graphics.Color
+import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.os.Handler
@@ -96,6 +97,9 @@ class DeviceActivity : AppCompatActivity() {
         statusDot = findViewById(R.id.statusDot)
         statusText = findViewById(R.id.statusText)
         findViewById<ImageButton>(R.id.btnDeviceSettings).setOnClickListener { showSettings() }
+        findViewById<ImageButton>(R.id.btnLog).setOnClickListener {
+            startActivity(Intent(this, LogActivity::class.java).putExtra(LogActivity.EXTRA_DEVICE_ID, deviceId))
+        }
         findViewById<MaterialButton>(R.id.btnAllOn).setOnClickListener { sendAll(true) }
         findViewById<MaterialButton>(R.id.btnAllOff).setOnClickListener { sendAll(false) }
 

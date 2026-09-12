@@ -8,6 +8,7 @@
 - 🔌 **四路开关独立控制**：大卡片 + 自绘开关拨钮（触摸区=视觉区），一键全开/全关
 - ⏱ **倒计时控制**：每个开关可独立设置倒计时（小时+分钟，最长 23:59），到时自动开启/关闭，可随时取消
 - ⏰ **定时任务**：每个开关可设置每天定时开/关（开时间+关时间，可只设其一），支持**按星期重复**（周一~周日自由勾选），可随时清除
+- 📋 **操作记录**：记录每个开关的开关动作及来源（按键/MQTT/WEB/定时/倒计时），支持按通道、动作筛选查询
 - ⚡ **实时状态**：2.5 秒轮询（可在设置中调整），在线/离线检测，卡片上直接显示四路开关状态
 - 📊 **电量统计**：电压、电流、功率、功率因数、今日/昨日/总用电量（与固件数据同源）
 - ✏️ **自定义命名**：设备别名 + 四个开关分别命名
@@ -32,6 +33,7 @@
 | `/get_status` | POST，`i=0` | 查询状态：`power1~4`、`voltage`、`current`、`power`、`apparent_power`、`reactive_power`、`factor`、`today`、`yesterday`、`total`、`starttime`、`timer1~4`、`timer1~4target`、`sched1~4` |
 | `/dc1_setting` | POST，`timer_ch` + `timer_seconds` + `timer_target` | 倒计时设置（`timer_seconds=0` 为取消） |
 | `/dc1_setting` | POST，`sched_ch` + `sched_on_hh/mm` + `sched_off_hh/mm` + `sched_days` | 定时任务设置（`sched_clear=1` 为清除，`sched_days` 位掩码 bit0=周一..bit6=周日） |
+| `/log` | POST，`n`（1-50）+ `ch`（0=全部）+ `act`（on/off/空） | 查询开关操作记录，返回 `{total, rows:[[时间,通道,on/off,来源],...]}` |
 
 > 说明：
 > - 客户端发送**明确的 on/off 指令**（而非翻转），因此与网页端、MQTT、HomeAssistant 等其它控制入口状态实时同步，不会互相冲突。
@@ -51,6 +53,10 @@
 倒计时设置：
 
 ![倒计时设置](docs/screenshot-timer.png)
+
+操作记录：
+
+![操作记录](docs/screenshot-log.png)
 
 ## 构建方法
 

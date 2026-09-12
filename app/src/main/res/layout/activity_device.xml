@@ -40,6 +40,14 @@
                 android:layout_weight="1" />
 
             <ImageButton
+                android:id="@+id/btnLog"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/log_desc"
+                android:src="@drawable/ic_history" />
+
+            <ImageButton
                 android:id="@+id/btnDeviceSettings"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
