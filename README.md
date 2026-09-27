@@ -43,6 +43,10 @@
 
 ## 界面截图
 
+设备列表（各插排实时功率一目了然）：
+
+![设备列表](docs/screenshot-list.png)
+
 设备控制页（开关 + 倒计时 + 定时任务）：
 
 ![主界面](docs/screenshot-main.png)
