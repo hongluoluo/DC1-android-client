@@ -31,7 +31,8 @@ class MainActivity : AppCompatActivity() {
         val statusTv: TextView,
         val ipTv: TextView,
         val dot: View,
-        val switchDots: List<View>
+        val switchDots: List<View>,
+        val powerTv: TextView
     )
 
     private val poller = object : Runnable {
@@ -154,6 +155,17 @@ class MainActivity : AppCompatActivity() {
             setTextColor(ContextCompat.getColor(this@MainActivity, R.color.text_secondary))
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
         }
+        // 实时功率（醒目显示）
+        val powerTv = TextView(this).apply {
+            text = "--"
+            textSize = 15f
+            typeface = Typeface.DEFAULT_BOLD
+            setTextColor(ContextCompat.getColor(this@MainActivity, R.color.text_primary))
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply { marginEnd = dp(10) }
+        }
         val switchDots = (0 until 4).map { i ->
             View(this).apply {
                 background = ContextCompat.getDrawable(this@MainActivity, R.drawable.dot_off)
@@ -163,13 +175,14 @@ class MainActivity : AppCompatActivity() {
             }
         }
         row2.addView(ipTv)
+        row2.addView(powerTv)
         switchDots.forEach { row2.addView(it) }
 
         col.addView(row1)
         col.addView(row2)
         card.addView(col)
 
-        cardViews[d.id] = DeviceCard(statusTv, ipTv, dot, switchDots)
+        cardViews[d.id] = DeviceCard(statusTv, ipTv, dot, switchDots, powerTv)
         return card
     }
 
@@ -191,6 +204,10 @@ class MainActivity : AppCompatActivity() {
                         ContextCompat.getColor(this, R.color.bad_color)
                     )
                     card.dot.background = ContextCompat.getDrawable(this, R.drawable.dot_bad)
+                    card.powerTv.text = "--"
+                    card.powerTv.setTextColor(
+                        ContextCompat.getColor(this, R.color.text_secondary)
+                    )
                     card.switchDots.forEach {
                         it.background = ContextCompat.getDrawable(this, R.drawable.dot_off)
                     }
@@ -200,6 +217,10 @@ class MainActivity : AppCompatActivity() {
                         ContextCompat.getColor(this, R.color.on_color)
                     )
                     card.dot.background = ContextCompat.getDrawable(this, R.drawable.dot_online)
+                    card.powerTv.text = data.optString("power", "0") + " W"
+                    card.powerTv.setTextColor(
+                        ContextCompat.getColor(this, R.color.text_primary)
+                    )
                     card.switchDots.forEachIndexed { i, v ->
                         val on = data.optInt("power${i + 1}") == 1
                         v.background = ContextCompat.getDrawable(
